@@ -41,12 +41,14 @@ def roll_stats() -> list:
     Function that sums up 3d6 and returns it
     :return : Returns a list that contains 6 numbers
     """
-    stats = []
-    i = 0
-    while i < 6:
-        stat = sum(highest_rolls())
-        stats.append(stat)
-        i += 1
+    stats = [0]
+    while sum(stats) <= 60:
+        stats = []
+        i = 0
+        while i < 6:
+            stat = sum(highest_rolls())
+            stats.append(stat)
+            i += 1
     return stats
 
 
