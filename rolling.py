@@ -43,7 +43,13 @@ def roll_stats() -> list:
     """
     stats = []
     i = 0
-    while i <= 6:
+    while i < 6:
         stat = sum(highest_rolls())
         stats.append(stat)
+        i += 1
     return stats
+
+
+if __name__ == '__main__':
+    print(highest_rolls())
+    print(roll_stats())
