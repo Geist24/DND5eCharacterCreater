@@ -47,9 +47,24 @@ def roll_stats() -> list:
         i = 0
         while i < 6:
             stat = sum(highest_rolls())
+            while stat in stats:
+                stat = sum(highest_rolls())
             stats.append(stat)
             i += 1
     return stats
+
+
+def modifier(modi) -> int:
+    """
+    :param modi: a positive integer
+    :return: the integer modifier = positive integer -10 // 2
+    """
+    try:
+        modi = int(modi)
+    except ValueError:
+        return -1
+    final = (modi - 10) // 2
+    return final
 
 
 if __name__ == '__main__':
