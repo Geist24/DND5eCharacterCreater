@@ -1,8 +1,9 @@
 from tkinter import *
 from tkinter import ttk
 import rolling
+import csv
 
-
+characters = []
 races = ['Dragonborn', 'Dwarf', 'Elf', 'Gnome', 'Half-elf', 'Halfling', 'Half-Orc', 'Human', 'Tiefling']
 classes = ['Artificer', 'Barbarian', 'Bard', 'Blood Hunter', 'Cleric', 'Druid', 'Fighter', 'Monk', 'Paladin', 'Ranger',
            'Rogue', 'Sorcerer', 'Warlock', 'Wizard']
@@ -14,11 +15,9 @@ class Window:
         self.main_frame = Frame(window)
         self.main_phrase = Label(self.main_frame, text='Welcome to the DM\'s tavern what can we do for you today?')
         self.add_character_button = Button(self.main_frame, text='Add Character', command=self.add_character)
-        self.update_character_button = Button(self.main_frame, text='Update Character', command=self.update_character)
-        self.see_characters_button = Button(self.main_frame, text='See All Characters', command=self.see_all_characters)
+        self.see_characters_button = Button(self.main_frame, text='See Character', command=self.question)
         self.main_phrase.pack(side=TOP, pady=20)
         self.add_character_button.pack(side=LEFT, padx=50)
-        self.update_character_button.pack(side=RIGHT, padx=50)
         self.see_characters_button.pack(side=BOTTOM)
         self.main_frame.pack()
         self.window = window
@@ -158,7 +157,8 @@ class Window:
 
         self.character_button_frame = Frame(self.master)
         self.menu_button = Button(self.character_button_frame, text="Go Back to Menu", command=self.menu)
-        self.save_character_button = Button(self.character_button_frame, text='Save Character')
+        self.save_character_button = Button(self.character_button_frame, text='Save Character',
+                                            command=self.save_character)
         self.restart_button = Button(self.character_button_frame, text='Restart', command=self.restart)
 
         # Putting the items on the frame to display later
@@ -218,11 +218,107 @@ class Window:
         self.save_character_button.grid(column=1, row=0, padx=50)
         self.restart_button.grid(column=2, row=0, padx=50)
 
-        # Start of Update Character Screen
-        self.update_frame = Frame(window)
+        self.char_question = Frame(window)
+        self.which = Label(self.char_question, text='Which Character Would You Like to See')
+        self.question_selection = ttk.Combobox(self.char_question)
+        self.question_selection['values'] = characters
+        self.question_selection.state(['readonly'])
+        self.select_button = Button(self.char_question, text='Select', command=self.see_character)
+        self.which_menu_button = Button(self.char_question, text='Menu', command=self.menu)
 
-        # Start of See all character Screen
-        self.all_char_frame = Frame(window)
+        self.which.pack(side=TOP, pady=10)
+        self.question_selection.pack(side=TOP, pady=15)
+        self.select_button.pack(side=LEFT, pady=20, padx=15)
+        self.which_menu_button.pack(side=RIGHT, pady=20, padx=15)
+
+        # Start of See character Screen
+        self.char_window = Frame(window)
+        self.char_frame_top = Frame(self.char_window)
+        self.char_frame_bottom = Frame(self.char_window)
+        self.char_menu = Button(self.char_window, text='Menu', command=self.menu)
+
+        self.nombre = StringVar()
+        self.char = StringVar()
+        self.race = StringVar()
+        self.str = StringVar()
+        self.dex = StringVar()
+        self.con = StringVar()
+        self.int = StringVar()
+        self.wis = StringVar()
+        self.cha = StringVar()
+        self.chara_level = StringVar()
+
+        self.char_name = Label(self.char_frame_top, textvariable=self.nombre)
+        self.char_name_label = Label(self.char_frame_top, text='Name')
+        self.chara_class_label = Label(self.char_frame_top, text='Class')
+        self.char_race_label = Label(self.char_frame_top, text='Race')
+        self.chara_class = Label(self.char_frame_top, textvariable=self.char)
+        self.char_race = Label(self.char_frame_top, textvariable=self.race)
+        self.char_level_label = Label(self.char_frame_top, text='Level')
+        self.char_level = Label(self.char_frame_top, textvariable=self.chara_level)
+
+        self.str_label = Label(self.char_frame_bottom, text='Str')
+        self.dex_label = Label(self.char_frame_bottom, text='Dex')
+        self.con_label = Label(self.char_frame_bottom, text='Con')
+        self.wis_label = Label(self.char_frame_bottom, text='Wis')
+        self.int_label = Label(self.char_frame_bottom, text='Int')
+        self.cha_label = Label(self.char_frame_bottom, text='Cha')
+
+        self.char_str = Label(self.char_frame_bottom, textvariable=self.str)
+        self.char_dex = Label(self.char_frame_bottom, textvariable=self.dex)
+        self.char_con = Label(self.char_frame_bottom, textvariable=self.con)
+        self.char_int = Label(self.char_frame_bottom, textvariable=self.int)
+        self.char_wis = Label(self.char_frame_bottom, textvariable=self.wis)
+        self.char_cha = Label(self.char_frame_bottom, textvariable=self.cha)
+
+        self.str_modi = StringVar()
+        self.dex_modi = StringVar()
+        self.con_modi = StringVar()
+        self.int_modi = StringVar()
+        self.wis_modi = StringVar()
+        self.cha_modi = StringVar()
+
+        self.char_str_mod = Label(self.char_frame_bottom, textvariable=self.str_modi)
+        self.char_dex_mod = Label(self.char_frame_bottom, textvariable=self.dex_modi)
+        self.char_con_mod = Label(self.char_frame_bottom, textvariable=self.con_modi)
+        self.char_int_mod = Label(self.char_frame_bottom, textvariable=self.int_modi)
+        self.char_wis_mod = Label(self.char_frame_bottom, textvariable=self.wis_modi)
+        self.char_cha_mod = Label(self.char_frame_bottom, textvariable=self.cha_modi)
+
+        self.char_name.grid(column=0, row=1, padx=5)
+        self.char_name_label.grid(column=0, row=0, padx=5)
+        self.chara_class_label.grid(column=1, row=0, padx=5)
+        self.char_race_label.grid(column=2, row=0, padx=5)
+        self.chara_class.grid(column=1, row=1, padx=5)
+        self.char_race.grid(column=2, row=1, padx=5)
+
+        self.str_label.grid(column=0, row=0, padx=5)
+        self.dex_label.grid(column=1, row=0, padx=5)
+        self.con_label.grid(column=2, row=0, padx=5)
+        self.wis_label.grid(column=3, row=0, padx=5)
+        self.int_label.grid(column=4, row=0, padx=5)
+        self.cha_label.grid(column=5, row=0, padx=5)
+
+        self.char_str.grid(column=0, row=1, padx=5)
+        self.char_dex.grid(column=1, row=1, padx=5)
+        self.char_con.grid(column=2, row=1, padx=5)
+        self.char_int.grid(column=3, row=1, padx=5)
+        self.char_wis.grid(column=4, row=1, padx=5)
+        self.char_cha.grid(column=5, row=1, padx=5)
+
+        self.char_str_mod.grid(column=0, row=2, padx=5)
+        self.char_dex_mod.grid(column=1, row=2, padx=5)
+        self.char_con_mod.grid(column=2, row=2, padx=5)
+        self.char_int_mod.grid(column=3, row=2, padx=5)
+        self.char_wis_mod.grid(column=4, row=2, padx=5)
+        self.char_cha_mod.grid(column=5, row=2, padx=5)
+
+        self.blank_frame = Frame(self.char_window)
+
+        self.blank_frame.grid(column=0, row=0, columnspan=3, rowspan=3)
+        self.char_frame_top.grid(column=3, row=3, padx=5)
+        self.char_frame_bottom.grid(column=4, row=4, padx=5)
+        self.char_menu.grid(column=5, row=5, padx=5)
 
     def add_character(self):
         self.main_frame.forget()
@@ -649,11 +745,29 @@ class Window:
             else:
                 self.cha_mod.set(f'+{charisma_mod}')
 
-    def update_character(self):
-        pass
+    def see_character(self):
+        name = self.question_selection.get()
+        file = open(name + '.csv', 'r')
+        read = csv.reader(file)
+        stats = []
+        for i in read:
+            stats = {'Name': name, 'Strength': int(i[1]), 'Dexterity': int(i[2]), 'Constitution': int(i[3]),
+                     'Intelligence': int(i[4]), 'Wisdom': int(i[5]), 'Charisma': int(i[6]), 'Level': i[7],
+                     'class': i[8], 'race': i[9]}
+        print(stats)
+        self.nombre.set(stats['Name'])
+        self.str.set(stats['Strength'])
+        self.dex.set(stats['Dexterity'])
+        self.con.set(stats['Constitution'])
+        self.wis.set(stats['Wisdom'])
+        self.int.set(stats['Intelligence'])
+        self.cha.set(stats['Charisma'])
+        self.chara_level.set(stats['Level'])
+        self.char.set(stats['class'])
+        self.race.set(stats['race'])
 
-    def see_all_characters(self):
-        pass
+        self.char_question.forget()
+        self.char_window.grid()
 
     def restart(self):
         new_rolls = rolling.roll_stats()
@@ -662,6 +776,8 @@ class Window:
         self.hidden_stats = hidden_list
         hidden_list.insert(0, '--')
         self.rolls.set(f'{new_rolls}')
+        self.name.delete(0, END)
+        self.level.delete(0,END)
         self.strength_entry.set('--')
         self.dexterity_entry.set('--')
         self.constitution_entry.set('--')
@@ -702,13 +818,39 @@ class Window:
         self.charisma_entry['values'] = hidden_list
 
     def save_character(self):
-        pass
+        # Files should be written as Name, Str, Dex, Con, Int, Wis, Cha, lvl, class, race
+        file = open(self.name.get() + '.csv', 'w', newline='')
+        weird = open('files.txt', 'a')
+        stats = {'Name': self.name.get().strip(), "Strength": self.str_total.get().strip(),
+                 'Dexterity': self.dex_total.get().strip(),
+                 'Constitution': self.con_total.get().strip(), 'Intelligence': self.int_total.get().strip(),
+                 'Wisdom': self.wis_total.get().strip(), 'Charisma': self.cha_total.get().strip(),
+                 "Level": self.level.get().strip(),
+                 'Class': self.char_class.get().strip(), "Race": self.race_selection.get().strip()}
+        fields = ['Name', 'Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma', 'Level',
+                  'Class', 'Race']
+        write = csv.DictWriter(file, fieldnames=fields)
+        write.writerow(stats)
+        weird.write(str(self.name.get()) + '\n')
+        file.close()
+        weird.close()
+        self.restart()
+        self.menu()
+        update()
+        self.question_selection['values'] = characters
 
     def menu(self):
         self.master.grid_remove()
+        self.char_window.grid_remove()
+        self.char_question.forget()
         self.main_frame.pack()
         self.window.geometry('500x150')
         center(self.window)
+
+    def question(self):
+        update()
+        self.main_frame.forget()
+        self.char_question.pack()
 
 
 # Got this code from https://stackoverflow.com/questions/3352918/how-to-center-a-window-on-the-screen-in-tkinter
@@ -728,3 +870,15 @@ def center(win):
     y = win.winfo_screenheight() // 2 - win_height // 2
     win.geometry('{}x{}+{}+{}'.format(width, height, x, y))
     win.deiconify()
+
+
+def update():
+    characters.clear()
+    f = open('files.txt', 'r')
+    c = 0
+    for i in f.readlines():
+        line = i.strip()
+        line.replace(' ', '.csv')
+        line = line.strip()
+        characters.insert(c, line)
+        c += 1

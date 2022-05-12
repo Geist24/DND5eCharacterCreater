@@ -2,6 +2,7 @@ from gui import *
 
 
 def main():
+    update()
     master = Tk()
     master.resizable(False, False)
     master.geometry('500x250')
